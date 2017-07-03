@@ -25,6 +25,7 @@ setup(
         'matplotlib',
         'scipy',
         'numpy',
+        'pymca5',
         'lmfit',
     ]
 )
