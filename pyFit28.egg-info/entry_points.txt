@@ -1,0 +1,3 @@
+[gui_scripts]
+pyfit = pyFit28:main
+

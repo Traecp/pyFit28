@@ -1,0 +1,6 @@
+include make_shortcut.py
+include pyfit.desktop
+include README.md
+include LICENSE
+include pyFit28/ui/icons/*
+exclude pyFit28/ui/*.ui pyFit28/ui/*.qrc pyFit28/ui/compile.py

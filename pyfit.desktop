@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=2017.6.30 
+Name[en_US]=pyfit 
+GenericName=Python program for IXS spectra fitting 
+Exec=pyfit
+Terminal=True
+Icon[en_US]=/usr/local/lib/python2.7/site-packages/pyFit28-2017.6.30-py2.7.egg/pyFit28/ui/icons/icon.ico
+Type=Application
+Categories=Application;Network;Security;
+Comment[en_US]=Python program for IXS data fitting
