@@ -4,13 +4,13 @@ from make_shortcut import *
 from setuptools import setup
 import os, sys
 
-pkgdata = {"":["icons/extract_2.png", "icons/help.png", "icons/loading.gif", "icons/open.png", "icons/quit.png", "icons/resolution.png", "icons/tick.png", "icons/wait.png", "icons/icon.ico"]}
+pkgdata = {"":["icons/extract_2.png", "icons/help.png", "icons/loading.gif", "icons/open.png", "icons/quit.png", "icons/resolution.png", "icons/tick.png", "icons/wait.png", "icons/icon.ico", "icons/icon.png"]}
 setup(
     name='pyFit28',
     version='2017.6.30',
     packages=['pyFit28', 'pyFit28.ui', 'pyFit28.ui.icons'],
     package_data=pkgdata,
-    url='https://github.com/Traecp/pyfit',
+    url='https://github.com/Traecp/pyFit28',
     license='GNU GENERAL PUBLIC LICENSE version 3',
     author='Tra Nguyen',
     author_email='thanh-tra.nguyen@esrf.fr',
@@ -23,9 +23,10 @@ setup(
     zip_safe=False,
     install_requires=[
         'matplotlib',
-        'scipy',
         'numpy',
+        'scipy',
         'pymca5',
+        'h5py',
         'lmfit',
     ]
 )

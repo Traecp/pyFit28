@@ -8,11 +8,11 @@ A fitting program aims to fit IXS (inelastic X-ray scattering) spectra (phonon -
 
 + INSTALLATION
 
-Linux & Windows:
+Linux & Windows & Mac:
 
  - Install Python 2.7 (I prefer to use Anaconda 64 bits)
  - Install PyQt4 (Anaconda comes with PyQt5 by default, please downgrade it: conda install pyqt=4)
- - Other requirements (normally these will be automatically installed when you install pyfit): numpy >= 1.11, scipy >= 0.19, lmfit >= 0.9.5, matplotlib >= 1.5 and PyMca5.
+ - Other requirements (normally these will be automatically installed when you install pyfit): numpy >= 1.11, scipy >= 0.19, lmfit >= 0.9.5, matplotlib >= 1.5, h5py >=2.5.0 and PyMca5.
  - Download and extract the source code of pyfit. Go to the folder where setup.py is found, open a terminal (command prompt on Windows) and type:
 python setup.py install (on Linux you might need to use *sudo* permission)
 
