@@ -7,7 +7,7 @@
 import sys, os, traceback
 import numpy as np
 from types import *
-from lmfit import Parameters, minimize, report_fit
+from lmfit import Parameters, minimize, report_fit, Minimizer
 from lmfit.lineshapes import lorentzian, gaussian
 from scipy import constants, signal
 from matplotlib.pylab import *
@@ -17,6 +17,15 @@ lorentzian(x,A,x0,sigma), fwhm = 2*sigma
 """
 kB = constants.k/constants.eV #Boltzmann constant in eV/K
 
+def sup_pow_2(x):
+    p=1
+    while(p<x):
+        p=p*2
+    return p
+    
+def conv(data, res):
+    return signal.convolve(data, res, mode="same", method="fft")/res.sum()
+    
 def avg_step(x):
     N = x.size
     avstep = (x[-1]-x[0])/(N-1)
@@ -85,28 +94,41 @@ def read_resolution_file(cfgfn,allowed_keys={} ):
     return cfg
     
 class Resolution_function:
-    def __init__(self, deta2, energy):
-        energy_avstep = avg_step(energy)
-        resolution_step = energy_avstep/5
-        nc = int(200/resolution_step)
-        npts = 2*nc +1
-        self.x_res = np.linspace(-200,200,npts)
-        self.resolution = pseudoVoigt_resolution(self.x_res, deta2[0], deta2[1], deta2[2])
+    def __init__(self, deta):
+        self.resolution_step = 0.1
+        emin=-50
+        emax=50
+        npts = int((emax-emin)/self.resolution_step)
+        npts = sup_pow_2(npts) +1
+        nc = npts//2
+        x = np.arange(npts)
+        self.x_res = (x-nc)*self.resolution_step
+        if deta==None:
+            deta = [0.5,1.0,1.0]#doesn't matter, because we are not going to convolute with it.
+        self.resolution = pseudoVoigt_resolution(self.x_res, deta[0], deta[1], deta[2])
         
 class Spectrum_model:
-    def __init__(self, pars, energy, deta2, lineshape, convolution=1, interpolation=1):
+    def __init__(self, pars, energy, lineshape, convolution=1, deta=None, interpolation=1):
         # pars = Parameters["noise", "el_A", "el_x0", "el_w", "T", "phonon_A_0", "phonon_E_0", "phonon_G_0", "phonon_A_n", ...]
         # spectrum model = elastic part + (phonons_part)n
         self.number_of_phonon = 0
         self.energy = energy
         self.pars = pars
-        self.RES = Resolution_function(deta2, self.energy)
+        self.RES = Resolution_function(deta)
         self.resolution = self.RES.resolution
+        
+        self.extent_energy = self.RES.x_res.max() - self.RES.x_res.min() + self.energy.max() - self.energy.min()
+        self.energy_step = self.RES.resolution_step
+        npts = int(self.extent_energy/self.energy_step)
+        self.npts = sup_pow_2(npts) +1
+        nc = self.npts//2
+        x = np.arange(self.npts)
+        self.interpolated_energy = (x-nc)*self.energy_step
+        
         
         self.lineshape = lineshape
         self.interpolation = interpolation
         self.convolution = convolution
-        self.interpolated_energy = self.RES.x_res
         
         self.get_model()
         
@@ -137,10 +159,10 @@ class Spectrum_model:
             inelastic_lines.append(inelastic_line)
         model = model + noise
         if self.convolution:
-            convoluted_model  = signal.convolve(model, self.resolution, mode="same", method="auto")/self.resolution.sum()
-            self.elastic_line = signal.convolve(self.elastic_line, self.resolution, mode="same", method="auto")/self.resolution.sum()
+            convoluted_model  = signal.convolve(model, self.resolution, mode="same", method="fft")/self.resolution.sum()
+            self.elastic_line = signal.convolve(self.elastic_line, self.resolution, mode="same", method="fft")/self.resolution.sum()
             for i in xrange(self.number_of_phonon):
-                inelastic_lines[i] = signal.convolve(inelastic_lines[i], self.resolution, mode="same", method="auto")/self.resolution.sum()
+                inelastic_lines[i] = signal.convolve(inelastic_lines[i], self.resolution, mode="same", method="fft")/self.resolution.sum()
         else:
             convoluted_model = model
         if self.interpolation:
@@ -153,10 +175,11 @@ class Spectrum_model:
         else:
             self.total_model = convoluted_model
             self.inelastic_lines = inelastic_lines
+            self.energy = self.interpolated_energy
             
 class Fit:
-    def __init__(self, pars_init, datafile, deta, shape):
-        
+    def __init__(self, pars_init, datafile, shape, convolution=1, deta = None):
+        self.convolution = convolution
         self.datafile = datafile
         self.shape = shape
         self.deta = deta
@@ -165,8 +188,10 @@ class Fit:
         self.intensity = self.data[:,1]
         self.intensity_err = self.data[:,2]
         self.pars_init = pars_init
-        result0 = minimize(chisquared, self.pars_init, args=(self.energy, self.intensity, self.intensity_err, self.deta, self.shape), method="nelder", options= {"maxfev":200}, nan_policy="omit")
-        self.result = minimize(chisquared, result0.params, args=(self.energy, self.intensity, self.intensity_err, self.deta, self.shape), maxfev=1000, nan_policy="omit")
+        M = Minimizer(chisquared, self.pars_init, fcn_args=(self.energy, self.intensity, self.intensity_err, self.shape, self.convolution, self.deta),nan_policy="omit")
+        result0 = M.minimize(method='Nelder-Mead', options={'maxfev':200})#, options={'maxfev':200}
+        self.result = M.minimize(params=result0.params)#, maxfev=1000
+        
         self.num_excitation = (len(self.pars_init.keys())-5)/3
         self.write_result()
         
@@ -198,7 +223,7 @@ class Fit:
         # Write the fitting data 
         header = "Energy \t Intensity \t Intensity_errorbar \t Total_model \t Elastic_line"
         outArray = np.vstack([self.energy, self.intensity,self.intensity_err])
-        mod = Spectrum_model(self.result.params, self.energy, self.deta, self.shape)
+        mod = Spectrum_model(self.result.params, self.energy, self.shape, convolution=self.convolution, deta=self.deta, interpolation=1)
         outArray = np.vstack([outArray, mod.total_model, mod.elastic_line])
         for i in xrange(self.num_excitation):
             outArray = np.vstack([outArray, mod.inelastic_lines[i]])
@@ -208,8 +233,8 @@ class Fit:
         
     
   
-def chisquared(pars,x,y,err, deta2, lineshape):
-    Mod = Spectrum_model(pars, x, deta2, lineshape, convolution=1, interpolation=1)
+def chisquared(pars,x,y,err, lineshape, convolution, deta):
+    Mod = Spectrum_model(pars, x, lineshape, convolution=convolution, deta=deta, interpolation=1)
     model = Mod.total_model
     return (y-model)/err
     

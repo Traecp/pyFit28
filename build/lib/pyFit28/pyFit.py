@@ -41,6 +41,7 @@ from pyFit28.ui.example_resolution import Ui_Example_Resolution
 from pyFit28.ui.help_dialog import Ui_Help_Dialog
 from pyFit28.ui.mainWindow import Ui_MainWindow
 #********** GUI ***************************************************
+__version__ = "2017.7.13"
 try:
 
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -93,27 +94,40 @@ class FittingThread(QThread):
     def __init__(self, parent):
         QThread.__init__(self)
         self.parent = parent
+        self.use_convolution = self.parent.deconvolution_btn.isChecked()
     def __del__(self):
         self.wait()
     def run(self):
-        lineshape = self.parent.lineShapeBox.currentText()
-        if lineshape=="DHO":
-            self.lineshape = "dho"
-        elif lineshape=="Lorentzian":
-            self.lineshape = "lor"
-        if self.parent.resolutionLoaded:
-            self.deta = self.parent.resolutionParams.res_param[self.parent.analyser]
-            self.fitObject = Fit(self.parent.pars_init, self.parent.datafile, self.deta, self.lineshape)
-            self.emit(SIGNAL("fitting_done"), self.fitObject)
+        if self.use_convolution:
+            if self.parent.resolutionLoaded:
+                goAhead=True
+                convolution = 1
+            else:
+                goAhead=False
+                self.emit(SIGNAL("resolution_missing"))
         else:
-            self.emit(SIGNAL("resolution_missing"))
+            goAhead=True
+            convolution = 0
+        if goAhead:
+            lineshape = self.parent.lineShapeBox.currentText()
+            if lineshape=="DHO":
+                self.lineshape = "dho"
+            elif lineshape=="Lorentzian":
+                self.lineshape = "lor"
+            if convolution:
+                self.deta = self.parent.resolutionParams.res_param[self.parent.analyser]
+            else:
+                self.deta=None
+            self.fitObject = Fit(self.parent.pars_init, self.parent.datafile, self.lineshape, convolution=convolution, deta=self.deta)
+            self.emit(SIGNAL("fitting_done"), self.fitObject)
+            
         
 class Main(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(Main, self).__init__()
         self.setupUi(self)
 
-        self.setWindowTitle("IXS spectra fitting program for ID28")
+        self.setWindowTitle("IXS spectra fitting program for ID28. Version %s"%__version__)
         # ****************** Toolbar actions settings ***********************************
         self.actionOpen.triggered.connect(self.loadData)
         self.actionExtract.triggered.connect(self.extractSpec)
@@ -144,6 +158,7 @@ class Main(QMainWindow, Ui_MainWindow):
         self.peak_y = []
         self.elastic_selected = False
         self.scale_changed = False
+        self.use_convolution = self.deconvolution_btn.isChecked()
         #************************* PLOT ****************************************
         self.fig=Figure(dpi=100)
         self.ax  = self.fig.add_subplot(111)
@@ -394,18 +409,23 @@ class Main(QMainWindow, Ui_MainWindow):
         self.FT.start()
     @QtCore.pyqtSlot()
     def fitting_done(self, fitObject):
+        self.use_convolution = self.deconvolution_btn.isChecked()
+        convolution = 1 if self.use_convolution else 0
         self.fitObject = fitObject
-        self.deta = self.resolutionParams.res_param[self.analyser]
-        mod = Spectrum_model(self.fitObject.result.params, self.energy, self.deta, self.fitObject.shape,interpolation=0)
+        if self.resolutionLoaded:
+            self.deta = self.resolutionParams.res_param[self.analyser]
+        else:
+            self.deta = None
+        mod = Spectrum_model(self.fitObject.result.params, self.energy, self.fitObject.shape, convolution=convolution, deta=self.deta, interpolation=0)
         self.ax.clear()
         self.ax.set_xlabel(self.MAIN_XLABEL, fontsize=15)
         self.ax.set_ylabel(self.MAIN_YLABEL, fontsize=15)
         self.ax.grid(True)
         self.ax.errorbar(self.energy, self.intensity, yerr=self.intensity_err, fmt="ko-",label="Exp. Data")
-        self.ax.plot(mod.interpolated_energy, mod.total_model, "r-", lw=1.5, label="Total model")
-        self.ax.plot(mod.interpolated_energy, mod.elastic_line, "g-", lw=1.5, label="Elastic line")
+        self.ax.plot(mod.energy, mod.total_model, "r-", lw=1.5, label="Total model")
+        self.ax.plot(mod.energy, mod.elastic_line, "g-", lw=1.5, label="Elastic line")
         for i in xrange(self.fitObject.num_excitation):
-            self.ax.plot(mod.interpolated_energy, mod.inelastic_lines[i], lw=1.5, label="Excitation #%d"%(i+1))
+            self.ax.plot(mod.energy, mod.inelastic_lines[i], 'b-', lw=1.5, label="Excitation #%d"%(i+1))
         self.ax.set_xlim([self.energy.min(), self.energy.max()])
         self.ax.legend(loc="best")
         datafile_basename = os.path.basename(self.datafile)

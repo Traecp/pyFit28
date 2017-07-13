@@ -6,7 +6,7 @@ import sysconfig
 if sys.platform == 'win32':
     from win32com.client import Dispatch
 homedir = os.path.expanduser("~")
-__version__ = "2017.6.30"
+__version__ = "2017.7.13"
 __pyVersion__ = "py2.7"
 version = __version__+"-"+__pyVersion__
 def post_install(packageName):

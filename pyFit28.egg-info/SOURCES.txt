@@ -30,6 +30,7 @@ pyFit28/ui/icons/extract.png
 pyFit28/ui/icons/extract_2.png
 pyFit28/ui/icons/help.png
 pyFit28/ui/icons/icon.ico
+pyFit28/ui/icons/icon.png
 pyFit28/ui/icons/loading.gif
 pyFit28/ui/icons/open.png
 pyFit28/ui/icons/quit.png

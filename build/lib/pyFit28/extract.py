@@ -170,8 +170,8 @@ def norma_error_calc(Deta,ione):
     Deta is the intensity extacted from the SpecFileDataObject
     ione is the monitor incoming intensity
     """
-    mean_ione = np.mean(ione)
-    facts_norm= mean_ione/ione
+    # mean_ione = np.mean(ione)
+    facts_norm= 1.0/ione
     Err = {}
     NErr = {}
     NI = {}

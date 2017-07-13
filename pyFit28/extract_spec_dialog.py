@@ -73,7 +73,10 @@ class ExtractionThread(QThread):
                 outfile = os.path.join(dirfn, outfile)
                 output = open(outfile,'w')
                 for i in range(len(DE[d])):
-                    output.write('%.3f %.2f %.2f 1 %d %d %.2f\n'%(DE[d][i],NI[d][i],NErr[d][i],Deta[d][i],ione[i],Err[d][i]))
+                    if Deta[d][i] != 0.:
+                        output.write('%.4f %.4e %.4e 1 %d %d %.4f\n'%(DE[d][i],NI[d][i],NErr[d][i],Deta[d][i],ione[i],Err[d][i]))
+                    else:
+                        continue
                 output.close()
             nb_item_done += 1
             frac = nb_item_done/total_item*100

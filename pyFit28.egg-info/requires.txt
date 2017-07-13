@@ -1,4 +1,6 @@
 matplotlib
-scipy
 numpy
+scipy
+pymca5
+h5py
 lmfit

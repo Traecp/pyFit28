@@ -1,8 +1,8 @@
 Metadata-Version: 1.0
 Name: pyFit28
-Version: 2017.6.30
+Version: 2017.7.13
 Summary: Fitting program for IXS spectra measured on ID28
-Home-page: https://github.com/Traecp/pyfit
+Home-page: https://github.com/Traecp/pyFit28
 Author: Tra Nguyen
 Author-email: thanh-tra.nguyen@esrf.fr
 License: GNU GENERAL PUBLIC LICENSE version 3
