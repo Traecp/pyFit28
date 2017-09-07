@@ -4,11 +4,9 @@ A fitting program aims to fit IXS (inelastic X-ray scattering) spectra (phonon -
 
 <img src="https://github.com/Traecp/pyFit28/blob/master/pyFit28_2.png">
 
+
+INSTALLATION ON WINDOWS:
 ====================
-
-+ INSTALLATION
-
-Linux & Windows & Mac:
 
  - Install Python 2.7 (I prefer to use Anaconda 64 bits)
  - Install PyQt4 (Anaconda comes with PyQt5 by default, please install PyQt4 by: *pip install -i https://pypi.anaconda.org/ales-erjavec/simple pyqt4)*
@@ -18,9 +16,28 @@ Linux & Windows & Mac:
  - Download and extract the source code of pyFit28. Go to the folder where setup.py is found, open a terminal (command prompt on Windows) and type:
 *python setup.py install* (on Linux you need to use *sudo* permission)
 
-===========
 
-+ RUN
+FOR NEWLY INSTALLED LINUX (TESTED ON DEBIAN AND UBUNTU):
+====================
+
+ - Install some dependencies which are useful for building future python packages (this is basically OpenGL): sudo apt-get install build-essential libgl1-mesa-dev freeglut3-dev
+ - Install Anaconda for Python 2.7 -64bits (you can use the 32bits version if your machine is 32 bits). Instruction here: https://docs.continuum.io/anaconda/install/
+ - Install PyQt4 with conda: conda install pyqt=4
+ - For the moment PyMca5 requires fisx>=1.1.4, which is not built for linux (today we are 07/09/2017). Please download the source code of fisx and install it manually.
+   The source code of fisx1.1.4 is here: https://github.com/vasole/fisx/archive/v1.1.4.tar.gz
+   Extracting the archive, get inside the folder fisx-1.1.4 within a terminal and type: python setup.py install
+ - Download the source code of pyFit28, extract it and install it with: python setup.py install 
+
+MACOSX:
+====================
+
+ - Install Anaconda (Python 2.7, 64 bits if applicable)
+ - Install PyQt4: https://pythonschool.net/pyqt/installing-pyqt-on-mac-os-x/
+ - Download the source code of pyFit28, extract it and install it with: python setup.py install
+ 
+ 
+RUN
+====================
 
  - To run it: On both Linux and Windows, a shortcut is created on your Desktop, double click it to run this program. Otherwise you can open a terminal (command prompt) and type *pyfit*.
 
