@@ -40,4 +40,13 @@ RUN
 ====================
 
  - To run it: On both Linux and Windows, a shortcut is created on your Desktop, double click it to run this program. Otherwise you can open a terminal (command prompt) and type *pyfit*.
+ 
+TRICKS
+====================
+ - First: load the resolution functions file (see Help menu)
+ - Second: load data files extracted by this program, or find the data WITH .dat as extension. I need the first 3 columns: energy transfer, intensity and intensity_error. The intensity can be normalized or not - doesn't matter.
+ - Third: Fitting: first you right-click on top of the Elastic line. If there is no elastic line, please right-click somewhere else to cheat the elastic line. The Elastic Line information is filled on the right panel.
+ Please manually modify the elastic center energy. Then FIX all of these parameters. Second: right-click on each inelastic peak. Please click ONLY the Anti-Stock part.
+ - Finnaly you can push the Fit button to start fitting.
+ - Please refer to the Help menu for more instruction.
 
