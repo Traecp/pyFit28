@@ -468,6 +468,7 @@ class Main(QMainWindow, Ui_MainWindow):
         for i in self.resolutionParams.res_param.keys():
             txt+= "%d : [%.6f, %.6f, %.6f]\n"%(i, self.resolutionParams.res_param[i][0], self.resolutionParams.res_param[i][1],self.resolutionParams.res_param[i][2])
         self.fitParamsDisplay.appendPlainText(txt)
+        self.current_folder = os.path.dirname(str(self.resolutionParamFile))
         
     def help(self):
         self.helpDialog = Help_Dialog()

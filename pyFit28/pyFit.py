@@ -41,7 +41,7 @@ from pyFit28.ui.example_resolution import Ui_Example_Resolution
 from pyFit28.ui.help_dialog import Ui_Help_Dialog
 from pyFit28.ui.mainWindow import Ui_MainWindow
 #********** GUI ***************************************************
-__version__ = "2017.7.13"
+__version__ = "2017.10.19"
 try:
 
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -468,6 +468,7 @@ class Main(QMainWindow, Ui_MainWindow):
         for i in self.resolutionParams.res_param.keys():
             txt+= "%d : [%.6f, %.6f, %.6f]\n"%(i, self.resolutionParams.res_param[i][0], self.resolutionParams.res_param[i][1],self.resolutionParams.res_param[i][2])
         self.fitParamsDisplay.appendPlainText(txt)
+        self.current_folder = os.path.dirname(str(self.resolutionParamFile))
         
     def help(self):
         self.helpDialog = Help_Dialog()

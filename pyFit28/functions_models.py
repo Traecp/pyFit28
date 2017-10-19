@@ -43,20 +43,20 @@ def pseudoVoigt_resolution(x,mu,wG,wL):
 def ELASTIC(x, A, x0, G):
     G = G/2.
     l28 = A*G/np.pi/((x-x0)**2 + G**2)
-    return l28
+    return np.nan_to_num(l28)
     
 def LOR(x, A, x0, G, KT):
     G = G/2.
     b = x/(1. - np.exp(-1.*x/KT))
     b[x.size/2]=1.
     l28 = A*G*G/4/np.pi* b * (1./((x-x0)**2 + G**2) + 1./((x+x0)**2 + G**2))
-    return l28
+    return np.nan_to_num(l28)
     
 def DHO(x, A, x0, G, KT):
     b = x/(1. - np.exp(-1.*x/KT))
     b[x.size/2]=1.
     d = A*G*x0*b/ ((x0**2 - x**2)**2 + G**2 * x**2)
-    return d
+    return np.nan_to_num(d)
      
 def read_resolution_file(cfgfn,allowed_keys={} ):
     """
@@ -118,6 +118,7 @@ class Spectrum_model:
         self.resolution = self.RES.resolution
         
         self.extent_energy = self.RES.x_res.max() - self.RES.x_res.min() + self.energy.max() - self.energy.min()
+        # self.extent_energy = 2.0*np.max(abs(self.RES.x_res)) + 2*np.max(abs(self.energy))
         self.energy_step = self.RES.resolution_step
         npts = int(self.extent_energy/self.energy_step)
         self.npts = sup_pow_2(npts) +1
@@ -176,6 +177,7 @@ class Spectrum_model:
             self.total_model = convoluted_model
             self.inelastic_lines = inelastic_lines
             self.energy = self.interpolated_energy
+        self.total_model = np.nan_to_num(self.total_model)
             
 class Fit:
     def __init__(self, pars_init, datafile, shape, convolution=1, deta = None):
@@ -213,7 +215,7 @@ class Fit:
             txt += "--------------------------------------------------------\n"
             txt += "Inelastic line %d: \n"%(i+1)
             txt += "Amplitude = %05.4f +/- %05.4f \n"%(self.result.params["phonon_A_%d"%i].value, self.result.params["phonon_A_%d"%i].stderr)
-            txt += "Center    = %05.4f +/- %05.4f (Relative to the elastic line)\n"%(self.result.params["phonon_E_%d"%i].value, self.result.params["phonon_E_%d"%i].stderr)
+            txt += "Center    = %05.4f +/- %05.4f (Relative to the elastic line)\n"%(abs(self.result.params["phonon_E_%d"%i].value), self.result.params["phonon_E_%d"%i].stderr)
             txt += "Width     = %05.4f +/- %05.4f \n"%(self.result.params["phonon_G_%d"%i].value, self.result.params["phonon_G_%d"%i].stderr)
             
         f = open(outfile_par, "w")
